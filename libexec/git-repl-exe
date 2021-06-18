@@ -1,0 +1,19 @@
+#! /bin/bash
+
+
+git::repl::exec() {
+    while true; do
+        if [ "${__GIT_REPL_VERBOSE}" = 1 ];then
+            git status -sb
+
+        fi
+        echo -ne "${GIT_REPL_DEFAULT_PROMPT@P}"
+        read subcommand
+        cmd="git $subcommand"
+        if [ "${subcommand}" != "" ];then
+            $cmd
+        fi
+    done
+}
+
+git::repl::exec && exit 0;
