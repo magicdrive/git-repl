@@ -31,10 +31,8 @@
 # SOFTWARE.
 
 
-
-exefile="$(cd $(dirname $0) && pwd)/../libexec/git-repl-exe"
-
-export GIT_REPL_DEFAULT_PROMPT="${GIT_REPL_DEFAULT_PROMPT:-"\$ git [\\W/] > "}"
+__GIT_REPL_PROMPT_ORIG=" \[\e[1;34m\]\$ git [$(basename $(git rev-parse --show-toplevel))] > \[\e[m\]"
+export GIT_REPL_DEFAULT_PROMPT="${GIT_REPL_DEFAULT_PROMPT:-${__GIT_REPL_PROMPT_ORIG}}"
 
 
 git::repl::help() {
@@ -47,16 +45,68 @@ HELP
     exit 1
 }
 
+git::repl::setup() {
+
+    if [ "$(uname)" = 'Darwin' ];then
+        if [ -f "$HOME/local/bin/ls" ];then
+            lscmd="ls --color=auto"
+        elif [ -f /usr/local/bin/gls ];then
+            lscmd="gls --color=auto"
+        else
+            lscmd="ls -G"
+        fi
+    else
+        lscmd="ls --color=auto"
+    fi
+
+    if [ -f "$(which bat)" ];then
+        catcmd="bat";
+    else
+        catcmd="cat";
+    fi
+    if [ -f "$HOME/local/bin/exa" ];then
+	    _lscmd="${lscmd}"
+        lscmd="exa --color=auto"
+    fi
+}
+
 
 git::repl::main() {
-    rlwrap "${exefile}"
-}
+    git::repl::setup
+    while true; do
+        if [ "${__GIT_REPL_VERBOSE}" = 1 ];then
+            git status -sb
 
+        fi
+        echo -ne "${GIT_REPL_DEFAULT_PROMPT@P}"
+        read subcommand
+
+        cmd="git ${subcommand}"
+
+        case "${subcommand}" in
+            "ls")
+                ${lscmd}
+                ;;
+            "exit")
+                exit 0
+                ;;
+            *)
+                ${cmd};
+                ;;
+        esac
+
+    done
+}
 
 git::repl::mode::verbose() {
-    env __GIT_REPL_VERBOSE=1 rlwrap ./libexec/git-repl-exe
+    __GIT_REPL_VERBOSE=1
+    git::repl::main
 }
 
+
+if [ "$1" != "--no-rlwrap" ];then
+    exec rlwrap $0 --no-rlwrap $@ && exit 0;
+fi
 
 optspec=":-:hcv"
 while getopts "$optspec" optchar; do

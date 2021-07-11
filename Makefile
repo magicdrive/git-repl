@@ -6,12 +6,10 @@ all:
 
 
 install:
-	mkdir -p $(PREFIX)/bin/ $(PREFIX)/share/man/man1/ $(PREFIX)/libexec/
-	cp -af $(CURRENTDIR)/bin/git-repl $(PREFIX)/bin/
-	cp -af $(CURRENTDIR)/libexec/git-repl-exe $(PREFIX)/libexec/
-	cp -af $(CURRENTDIR)/man/git-repl.1 $(PREFIX)/share/man/man1/
+	mkdir -p $(PREFIX)/bin/ $(PREFIX)/share/man/man1/
+	cp -af $(CURRENTDIR)/git-repl $(PREFIX)/bin/
+	cp -af $(CURRENTDIR)/git-repl.1 $(PREFIX)/share/man/man1/
 
 uninstall:
-	rm -f $(PREFIX)/bin/gemini
-	rm -f $(CURRENTDIR)/libexec/git-repl-exe
-	rm -f $(PREFIX)/share/man/man1/gemini.1
+	rm -f $(PREFIX)/bin/git-repl
+	rm -f $(PREFIX)/share/man/man1/git-repl.1
