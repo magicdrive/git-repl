@@ -33,6 +33,8 @@
 
 __GIT_REPL_PROMPT_ORIG=" \[\e[1;34m\]\$ git [$(basename $(git rev-parse --show-toplevel))] > \[\e[m\]"
 export GIT_REPL_DEFAULT_PROMPT="${GIT_REPL_DEFAULT_PROMPT:-${__GIT_REPL_PROMPT_ORIG}}"
+export GIT_REPL_LS_CMD="${GIT_REPL_LS_CMD}"
+export GIT_REPL_CAT_CMD="${GIT_REPL_CAT_CMD}"
 
 
 git::repl::help() {
@@ -64,9 +66,17 @@ git::repl::setup() {
     else
         catcmd="cat";
     fi
+
     if [ -f "$HOME/local/bin/exa" ];then
-	    _lscmd="${lscmd}"
         lscmd="exa --color=auto"
+    fi
+
+    if [ -x "$(which ${GIT_REPL_LS_CMD})" ];then
+        lscmd="${GIT_REPL_LS_CMD}"
+    fi
+
+    if [ -x "$(which ${GIT_REPL_CAT_CMD})" ];then
+        catcmd="${GIT_REPL_CAT_CMD}"
     fi
 }
 
@@ -85,13 +95,27 @@ git::repl::main() {
 
         case "${subcommand}" in
             "ls")
+                if [ "${__GIT_REPL_VERBOSE}" = 1 ];then
+                    pwd
+                fi
                 ${lscmd}
                 ;;
             "exit")
+                echo "bye."
                 exit 0
                 ;;
             *)
-                ${cmd};
+                if [[ ${subcommand} =~ ^!(.*)$ ]]; then
+                    ${BASH_REMATCH[1]}
+                elif [[ ${subcommand} =~ ^git[:blank:]*.*$ ]]; then
+                    ${subcommand}
+                elif [[ ${subcommand} =~ ^ls[:blank:]*(.*)$ ]]; then
+                    ${lscmd} ${BASH_REMATCH[1]}
+                elif [[ ${subcommand} =~ ^cat[:blank:]*(.*)$ ]]; then
+                    ${catcmd} ${BASH_REMATCH[1]}
+                else
+                    ${cmd};
+                fi
                 ;;
         esac
 
