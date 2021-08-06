@@ -93,7 +93,7 @@ git::repl::main() {
     while true; do
         if [ "${__GIT_REPL_VERBOSE}" = 1 ];then
             git status -sb
-
+            pwd
         fi
         echo -ne "${GIT_REPL_DEFAULT_PROMPT@P}"
         read subcommand
