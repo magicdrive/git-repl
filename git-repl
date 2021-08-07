@@ -32,7 +32,7 @@
 
 set -e
 
-__GIT_REPL_PROMPT_ORIG="\[\e[1;36m\]\$ git [\$(__prompt::toplevel))] \[\e[1;35m\]\$(__prompt::branch)\[\e[m\] > \[\e[m\]"
+__GIT_REPL_PROMPT_ORIG="\[\e[1;36m\]\$ git [\$(__prompt::toplevel)] \[\e[1;35m\]\$(__prompt::branch)\[\e[m\] > \[\e[m\]"
 export GIT_REPL_DEFAULT_PROMPT="${GIT_REPL_DEFAULT_PROMPT:-${__GIT_REPL_PROMPT_ORIG}}"
 export GIT_REPL_LS_CMD="${GIT_REPL_LS_CMD}"
 export GIT_REPL_CAT_CMD="${GIT_REPL_CAT_CMD}"
