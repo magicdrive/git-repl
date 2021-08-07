@@ -150,7 +150,7 @@ if [ "$1" != "--no-rlwrap" ];then
     exec rlwrap --remember $0 --no-rlwrap $@ && exit 0;
 fi
 
-optspec=":-:hcv"
+optspec=":-:hv"
 while getopts "$optspec" optchar; do
     case "${optchar}" in
         -)
