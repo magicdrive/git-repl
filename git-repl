@@ -147,7 +147,7 @@ git::repl::mode::verbose() {
 git rev-parse
 
 if [ "$1" != "--no-rlwrap" ];then
-    exec rlwrap $0 --no-rlwrap $@ && exit 0;
+    exec rlwrap --remember $0 --no-rlwrap $@ && exit 0;
 fi
 
 optspec=":-:hcv"
