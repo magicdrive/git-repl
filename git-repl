@@ -30,19 +30,24 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-__GIT_REPL_PROMPT_ORIG="\[\e[1;34m\]\$ git [\$(basename \$(git rev-parse --show-toplevel))] \$(git::repl::prompt::branch) > \[\e[m\]"
+__GIT_REPL_PROMPT_ORIG="\[\e[1;36m\]\$ git [\$(__prompt::toplevel))] \[\e[1;35m\]\$(__prompt::branch)\[\e[m\] > \[\e[m\]"
 export GIT_REPL_DEFAULT_PROMPT="${GIT_REPL_DEFAULT_PROMPT:-${__GIT_REPL_PROMPT_ORIG}}"
 export GIT_REPL_LS_CMD="${GIT_REPL_LS_CMD}"
 export GIT_REPL_CAT_CMD="${GIT_REPL_CAT_CMD}"
 
 
-git::repl::prompt::dirty() {
+__prompt::dirty() {
     git rev-parse 2> /dev/null && [ "$(git status --short 2>/dev/null)" = "" ] || echo "*"
 }
 
-git::repl::prompt::branch() {
-    git rev-parse 2> /dev/null && echo "($(git rev-parse --abbrev-ref HEAD 2> /dev/null)$(git::repl::prompt::dirty))"
+__prompt::branch() {
+    git rev-parse 2> /dev/null && echo "($(git rev-parse --abbrev-ref HEAD 2> /dev/null)$(__prompt::dirty))"
 }
+
+__prompt::toplevel() {
+    basename $(git rev-parse --show-toplevel)
+}
+
 
 git::repl::help() {
     cat << HELP
