@@ -97,12 +97,13 @@ git::repl::setup() {
 
 git::repl::main() {
     git::repl::setup
+    __PROMPT="${GIT_REPL_DEFAULT_PROMPT@P}"
     while true; do
         if [ "${__GIT_REPL_VERBOSE}" = 1 ];then
             git status -sb
             pwd
         fi
-        echo -ne "${GIT_REPL_DEFAULT_PROMPT@P}"
+        echo -ne "${__PROMPT}"
         read subcommand
 
         cmd="git ${subcommand}"
