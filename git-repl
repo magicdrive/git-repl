@@ -127,6 +127,9 @@ git::repl::main() {
                     ${lscmd} ${BASH_REMATCH[1]}
                 elif [[ ${subcommand} =~ ^cat[:blank:]*(.*)$ ]]; then
                     ${catcmd} ${BASH_REMATCH[1]}
+                elif [[ -z ${subcommand} ]];then
+                    # do nothing.
+                    :
                 else
                     ${cmd};
                 fi
