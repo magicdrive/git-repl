@@ -5,8 +5,10 @@
 #
 # USAGE:
 #     * git-repl                      # Launch git with REPL in current path.
-#     *  [-v|--verbose]               # REPL verbose mode.
 #     *  [-h|--help]                  # Show This help.
+#     *  [-v|--verbose]               # REPL start with repository infomation message.
+#     *  [-s|--with-status]           # Exec git status command, when pre loop.
+#     *  [-f|--completion]            # Specify Completion file.
 #
 # MIT License
 #
@@ -32,8 +34,9 @@
 
 set -e
 
-__GIT_REPL_PROMPT_ORIG="\[\e[1;36m\]\$ git-repl [\$(__prompt::toplevel)] \[\e[1;35m\]\$(__prompt::branch)\[\e[m\] > git \[\e[m\]"
+__GIT_REPL_PROMPT_ORIG="\[\e[1;36m\]\$ git-repl [\$(__prompt::toplevel)] \[\e[1;35m\]\$(__prompt::branch)\[\e[m\] > \[\e[32m\]git\[\e[m\] "
 export GIT_REPL_DEFAULT_PROMPT="${GIT_REPL_DEFAULT_PROMPT:-${__GIT_REPL_PROMPT_ORIG}}"
+export GIT_REPL_DEFAULT_COMPLETION_FILE="${GIT_REPL_DEFAULT_COMPLETION_FILE:-""}"
 export GIT_REPL_LS_CMD="${GIT_REPL_LS_CMD}"
 export GIT_REPL_CAT_CMD="${GIT_REPL_CAT_CMD}"
 
@@ -55,8 +58,10 @@ git::repl::help() {
     cat << HELP
 USAGE:
     * git-repl                      # Launch git with REPL in current path.
-    *  [-v|--verbose]               # REPL verbose mode.
     *  [-h|--help]                  # Show This help.
+    *  [-v|--verbose]               # REPL start with repository infomation message.
+    *  [-s|--with-status]           # Exec git status command, when pre loop.
+    *  [-f|--completion]            # Specify Completion file.
 HELP
     exit 1
 }
@@ -94,9 +99,9 @@ git::repl::setup() {
     fi
 }
 
-git::repl::start_message() {
+git::repl::message::start() {
     echo -e "\033[1;33m-- start git-repl --\033[m"
-    logo=$(cat << 'EOS'
+    local logo=$(cat << 'EOS'
           _ __                        __
    ____ _(_) /_      ________  ____  / /
   / __ `/ / __/_____/ ___/ _ \/ __ \/ /
@@ -108,16 +113,26 @@ EOS
     echo -e "\033[1;33m${logo}"
     echo
     echo
+}
+
+git::repl::message::bind_command() {
+    echo -e "\033[1;37;42m* repl config:\033[m"
+    echo "ls  as \`${lscmd}\`"
+    echo "cat as \`${catcmd}\`"
     echo
 }
 
 git::repl::info() {
-    echo -e "\033[1;37;42m* status:\033[m"
-    git status -sb
-    echo
-
     echo -e "\033[1;37;42m* remote:\033[m"
     git remote -v
+    echo
+
+    echo -e "\033[1;37;42m* git/config:\033[m"
+    if [[ ${catcmd} = "bat" ]];then
+        bat --plain --paging=never "$(git rev-parse --show-toplevel)/.git/config"
+    else
+        cat "$(git rev-parse --show-toplevel)/.git/config"
+    fi
     echo
 
     echo -e "\033[1;37;42m* pwd:\033[m"
@@ -127,40 +142,48 @@ git::repl::info() {
     echo -e "\033[1;37;42m* lscmd -a:\033[m"
     ${lscmd} -a
     echo
+
 }
 
+git::repl::exit() {
+    echo "git-repl end..."
+    echo "bye."
+    exit 0
+}
+
+git::repl::config::completion() {
+    local completion_file="$1"
+    if [[ -e ${completion_file} ]];then
+        GIT_REPL_DEFAULT_COMPLETION_FILE="$1"
+    fi
+}
 
 git::repl::main() {
     git::repl::setup
-    git::repl::start_message
-    git::repl::info
+    git::repl::message::start
+    git::repl::message::bind_command
+    if [ "${__GIT_REPL_START_WITH_INFO}" = 1 ];then
+        git::repl::info
+    fi
 
     while true; do
         echo -ne "${GIT_REPL_DEFAULT_PROMPT@P}"
         read subcommand
 
-        if [ "${__GIT_REPL_VERBOSE}" = 1 ];then
-            git::repl::info
-        fi
-
-        cmd="git ${subcommand}"
-
         case "${subcommand}" in
             "ls")
-                if [ "${__GIT_REPL_VERBOSE}" = 1 ];then
-                    pwd
-                fi
                 ${lscmd}
                 ;;
             "exit")
-                echo "bye."
-                exit 0
+                git::repl::exit
                 ;;
             *)
                 if [[ ${subcommand} =~ ^!(.*)$ ]]; then
                     ${BASH_REMATCH[1]}
                 elif [[ ${subcommand} =~ ^git[:blank:]*.*$ ]]; then
                     ${subcommand}
+                elif [[ ${subcommand} =~ ^[:blank:]*info[:blank:]*$ ]]; then
+                    git::repl::info
                 elif [[ ${subcommand} =~ ^ls[:blank:]*(.*)$ ]]; then
                     ${lscmd} ${BASH_REMATCH[1]}
                 elif [[ ${subcommand} =~ ^cat[:blank:]*(.*)$ ]]; then
@@ -169,29 +192,40 @@ git::repl::main() {
                     # do nothing.
                     :
                 else
-                    ${cmd};
+                    git ${subcommand}
                 fi
                 ;;
         esac
+
+        if [ "${__GIT_REPL_WITH_STATUS}" = 1 ];then
+            git status -sb
+        fi
 
     done
 }
 
 git::repl::mode::verbose() {
-    __GIT_REPL_VERBOSE=1
-    git::repl::main
+    __GIT_REPL_START_WITH_INFO=1
+}
+
+git::repl::mode::with_status() {
+    __GIT_REPL_WITH_STATUS=1
 }
 
 #
 # check git repository
 #
-git rev-parse
+git rev-parse || git::repl::exit
 
 if [ "$1" != "--no-rlwrap" ];then
-    exec rlwrap --remember $0 --no-rlwrap $@ && exit 0;
+    _RLWRAP_OPT="--remember"
+    if [[ -f ${GIT_REPL_DEFAULT_COMPLETION_FILE} ]];then
+        OPT="$_RLWRAP_OPT --file "${GIT_REPL_DEFAULT_COMPLETION_FILE}""
+    fi
+    exec rlwrap $_RLWRAP_OPT $0 --no-rlwrap $@ && exit 0;
 fi
 
-optspec=":-:hv"
+optspec=":-:c:hv"
 while getopts "$optspec" optchar; do
     case "${optchar}" in
         -)
@@ -199,8 +233,15 @@ while getopts "$optspec" optchar; do
                 help)
                     git::repl::help; exit 1
                     ;;
+                completion)
+                    val="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                    git::repl::config::completion "${val}"
+                    ;;
                 verbose)
                     git::repl::mode::verbose
+                    ;;
+                with-status)
+                    git::repl::mode::with_status
                     ;;
                 *)
                     if [ "$OPTERR" = 1 ] && [ "${optspec:0:1}" != ":" ]; then
@@ -211,8 +252,14 @@ while getopts "$optspec" optchar; do
         h)
             git::repl::help; exit 1
             ;;
+        c)
+            git::repl::config::completion "${OPTARG}"
+            ;;
         v)
             git::repl::mode::verbose
+            ;;
+        s)
+            git::repl::mode::with_status
             ;;
         *)
             if [ "$OPTERR" != 1 ] || [ "${optspec:0:1}" = ":" ]; then
@@ -225,4 +272,3 @@ done
 
 
 git::repl::main && exit 0;
-
