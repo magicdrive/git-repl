@@ -32,7 +32,7 @@
 
 set -e
 
-__GIT_REPL_PROMPT_ORIG="\[\e[1;36m\]\$ git [\$(__prompt::toplevel)] \[\e[1;35m\]\$(__prompt::branch)\[\e[m\] > \[\e[m\]"
+__GIT_REPL_PROMPT_ORIG="\[\e[1;36m\]\$ git-repl [\$(__prompt::toplevel)] \[\e[1;35m\]\$(__prompt::branch)\[\e[m\] > git \[\e[m\]"
 export GIT_REPL_DEFAULT_PROMPT="${GIT_REPL_DEFAULT_PROMPT:-${__GIT_REPL_PROMPT_ORIG}}"
 export GIT_REPL_LS_CMD="${GIT_REPL_LS_CMD}"
 export GIT_REPL_CAT_CMD="${GIT_REPL_CAT_CMD}"
@@ -94,16 +94,38 @@ git::repl::setup() {
     fi
 }
 
+git::repl::start_message() {
+    echo -e "\033[1;33m-- start git-repl --\033[m"
+    echo
+}
+
+git::repl::info() {
+    echo -e "\033[1;37;42m* status:\033[m"
+    git status -sb
+    echo
+
+    echo -e "\033[1;37;42m* current:\033[m"
+    pwd
+    echo
+
+    echo -e "\033[1;37;42m* dir:\033[m"
+    ${lscmd}
+    echo
+}
+
 
 git::repl::main() {
     git::repl::setup
+    git::repl::start_message
+    git::repl::info
+
     while true; do
-        if [ "${__GIT_REPL_VERBOSE}" = 1 ];then
-            git status -sb
-            pwd
-        fi
         echo -ne "${GIT_REPL_DEFAULT_PROMPT@P}"
         read subcommand
+
+        if [ "${__GIT_REPL_VERBOSE}" = 1 ];then
+            git::repl::info
+        fi
 
         cmd="git ${subcommand}"
 
