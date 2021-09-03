@@ -1,5 +1,4 @@
 # git-repl
-====
 
 NAME
 ----
@@ -17,6 +16,19 @@ USAGE
  *  [-s|--with-status]           # Exec git status command, when pre loop.
  *  [-f|--completion]            # Specify Completion file.
 ```
+
+ENVIROMENTS
+----
+```
+GIT_REPL_DEFAULT_PROMPT          # git repl prompt
+GIT_REPL_DEFAULT_COMPLETION_FILE # completion file locate.
+GIT_REPL_LS_CMD                  # ls alias in REPL
+GIT_REPL_CAT_CMD                 # cat alias in REPL
+GIT_REPL_START_WITH_INFO         # start with infomation message. on:1 off:0 (default 0)
+GIT_REPL_START_WITH_HELP_MESSAGE # start with help message. on:1 off:0 (default 1)
+GIT_REPL_WITH_STATUS             # exec after `git status -sb`. on:1 off:0 (default 0)
+```
+
 
 MIT License
 
