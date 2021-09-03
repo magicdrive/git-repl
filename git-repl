@@ -43,8 +43,8 @@ export GIT_REPL_DEFAULT_COMPLETION_FILE="${GIT_REPL_DEFAULT_COMPLETION_FILE:-""}
 export GIT_REPL_LS_CMD="${GIT_REPL_LS_CMD:-""}"
 export GIT_REPL_CAT_CMD="${GIT_REPL_CAT_CMD:-""}"
 export GIT_REPL_START_WITH_INFO=${GIT_REPL_START_WITH_INFO:-"0"}
-export GIT_REPL_WITH_STATUS=${GIT_REPL_WITH_STATUS:-"0"}
 export GIT_REPL_START_WITH_HELP_MESSAGE=${GIT_REPL_START_WITH_HELP_MESSAGE:-"1"}
+export GIT_REPL_WITH_STATUS=${GIT_REPL_WITH_STATUS:-"0"}
 
 __prompt::dirty() {
     git rev-parse 2> /dev/null && [ "$(git status --short 2>/dev/null)" = "" ] || echo "*"
