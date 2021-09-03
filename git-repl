@@ -6,6 +6,7 @@
 # USAGE:
 #     * git-repl                      # Launch git with REPL in current path.
 #     *  [-h|--help]                  # Show This help.
+#     *  [-i|--init]                  # Initialize current dir as git-repository. then start REPL
 #     *  [-v|--verbose]               # REPL start with repository infomation message.
 #     *  [-s|--with-status]           # Exec git status command, when pre loop.
 #     *  [-f|--completion]            # Specify Completion file.
@@ -59,7 +60,8 @@ git::repl::help() {
 USAGE:
     * git-repl                      # Launch git with REPL in current path.
     *  [-h|--help]                  # Show This help.
-    *  [-v|--verbose]               # REPL start with repository infomation message.
+    *  [-i|--init]                  # Initialize current dir as git-repository. then start REPL
+    *  [-v|--verbose]               # Start REPL with repository infomation message.
     *  [-s|--with-status]           # Exec git status command, when pre loop.
     *  [-f|--completion]            # Specify Completion file.
 HELP
@@ -117,8 +119,8 @@ EOS
 
 git::repl::message::bind_command() {
     echo -e "\033[1;37;42m* repl config:\033[m"
-    echo "ls  as \`${lscmd}\`"
-    echo "cat as \`${catcmd}\`"
+    echo "alias ls=\`${lscmd}\`"
+    echo "alias cat=\`${catcmd}\`"
     echo
 }
 
@@ -146,9 +148,14 @@ git::repl::info() {
 }
 
 git::repl::exit() {
+    echo
     echo "git-repl end..."
     echo "bye."
     exit 0
+}
+
+git::repl::do_git_init() {
+    git rev-parse || git init
 }
 
 git::repl::config::completion() {
@@ -162,7 +169,7 @@ git::repl::main() {
     git::repl::setup
     git::repl::message::start
     git::repl::message::bind_command
-    if [ "${__GIT_REPL_START_WITH_INFO}" = 1 ];then
+    if [ "${__GIT_REPL_START_WITH_INFO}" = "1" ];then
         git::repl::info
     fi
 
@@ -182,7 +189,7 @@ git::repl::main() {
                     ${BASH_REMATCH[1]}
                 elif [[ ${subcommand} =~ ^git[:blank:]*.*$ ]]; then
                     ${subcommand}
-                elif [[ ${subcommand} =~ ^[:blank:]*info[:blank:]*$ ]]; then
+                elif [[ ${subcommand} =~ ^[:blank:]*info![:blank:]*$ ]]; then
                     git::repl::info
                 elif [[ ${subcommand} =~ ^ls[:blank:]*(.*)$ ]]; then
                     ${lscmd} ${BASH_REMATCH[1]}
@@ -197,7 +204,7 @@ git::repl::main() {
                 ;;
         esac
 
-        if [ "${__GIT_REPL_WITH_STATUS}" = 1 ];then
+        if [ "${__GIT_REPL_WITH_STATUS}" = "1" ];then
             git status -sb
         fi
 
@@ -225,13 +232,16 @@ if [ "$1" != "--no-rlwrap" ];then
     exec rlwrap $_RLWRAP_OPT $0 --no-rlwrap $@ && exit 0;
 fi
 
-optspec=":-:c:hv"
+optspec=":-:c:hvsi"
 while getopts "$optspec" optchar; do
     case "${optchar}" in
         -)
             case "${OPTARG}" in
                 help)
                     git::repl::help; exit 1
+                    ;;
+                init)
+                    git::repl::do_git_init
                     ;;
                 completion)
                     val="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
@@ -252,6 +262,9 @@ while getopts "$optspec" optchar; do
         h)
             git::repl::help; exit 1
             ;;
+        i)
+            git::repl::do_git_init
+            ;;
         c)
             git::repl::config::completion "${OPTARG}"
             ;;
@@ -270,5 +283,7 @@ while getopts "$optspec" optchar; do
     esac
 done
 
+
+trap git::repl::exit HUP INT QUIT TERM
 
 git::repl::main && exit 0;
