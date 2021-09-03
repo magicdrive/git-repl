@@ -38,9 +38,11 @@ set -e
 __GIT_REPL_PROMPT_ORIG="\[\e[1;36m\]\$ git-repl [\$(__prompt::toplevel)] \[\e[1;35m\]\$(__prompt::branch)\[\e[m\] > \[\e[32m\]git\[\e[m\] "
 export GIT_REPL_DEFAULT_PROMPT="${GIT_REPL_DEFAULT_PROMPT:-${__GIT_REPL_PROMPT_ORIG}}"
 export GIT_REPL_DEFAULT_COMPLETION_FILE="${GIT_REPL_DEFAULT_COMPLETION_FILE:-""}"
-export GIT_REPL_LS_CMD="${GIT_REPL_LS_CMD}"
-export GIT_REPL_CAT_CMD="${GIT_REPL_CAT_CMD}"
-
+export GIT_REPL_LS_CMD="${GIT_REPL_LS_CMD:-""}"
+export GIT_REPL_CAT_CMD="${GIT_REPL_CAT_CMD:-""}"
+export __GIT_REPL_START_WITH_INFO=0
+export __GIT_REPL_WITH_STATUS=0
+export __GIT_REPL_START_WITH_HELP_MESSAGE=1
 
 __prompt::dirty() {
     git rev-parse 2> /dev/null && [ "$(git status --short 2>/dev/null)" = "" ] || echo "*"
@@ -54,6 +56,9 @@ __prompt::toplevel() {
     basename $(git rev-parse --show-toplevel)
 }
 
+git::repl::version() {
+    echo "v1.0.0"
+}
 
 git::repl::help() {
     cat << HELP
@@ -102,7 +107,7 @@ git::repl::setup() {
 }
 
 git::repl::message::start() {
-    echo -e "\033[1;33m-- start git-repl --\033[m"
+    echo -e "\033[1;33m-- start git-repl $(git::repl::version)--\033[m"
     local logo=$(cat << 'EOS'
           _ __                        __
    ____ _(_) /_      ________  ____  / /
@@ -121,6 +126,12 @@ git::repl::message::bind_command() {
     echo -e "\033[1;37;42m* repl config:\033[m"
     echo "alias ls=\`${lscmd}\`"
     echo "alias cat=\`${catcmd}\`"
+    echo
+    echo -e "\033[1;37;42m* repl special command:\033[m"
+    echo "help!       -> Show this message."
+    echo "info!       -> Show git infomation."
+    echo "exit        -> Exit git-repl."
+    echo "![command]  -> Run as normal command."
     echo
 }
 
@@ -155,7 +166,7 @@ git::repl::exit() {
 }
 
 git::repl::do_git_init() {
-    git rev-parse || git init
+    git rev-parse 2>/dev/null || git init
 }
 
 git::repl::config::completion() {
@@ -168,7 +179,9 @@ git::repl::config::completion() {
 git::repl::main() {
     git::repl::setup
     git::repl::message::start
-    git::repl::message::bind_command
+    if [ "${__GIT_REPL_START_WITH_HELP_MESSAGE}" = "1" ];then
+        git::repl::message::bind_command
+    fi
     if [ "${__GIT_REPL_START_WITH_INFO}" = "1" ];then
         git::repl::info
     fi
@@ -193,6 +206,8 @@ git::repl::main() {
                     git::repl::info
                 elif [[ ${subcommand} =~ ^ls[:blank:]*(.*)$ ]]; then
                     ${lscmd} ${BASH_REMATCH[1]}
+                elif [[ ${subcommand} =~ ^[:blank:]*help![:blank:]*$ ]]; then
+                    git::repl::message::bind_command
                 elif [[ ${subcommand} =~ ^cat[:blank:]*(.*)$ ]]; then
                     ${catcmd} ${BASH_REMATCH[1]}
                 elif [[ -z ${subcommand} ]];then
@@ -211,6 +226,10 @@ git::repl::main() {
     done
 }
 
+git::repl::mode::no_help_message() {
+    __GIT_REPL_START_WITH_HELP_MESSAGE=0
+}
+
 git::repl::mode::verbose() {
     __GIT_REPL_START_WITH_INFO=1
 }
@@ -218,11 +237,6 @@ git::repl::mode::verbose() {
 git::repl::mode::with_status() {
     __GIT_REPL_WITH_STATUS=1
 }
-
-#
-# check git repository
-#
-git rev-parse || git::repl::exit
 
 if [ "$1" != "--no-rlwrap" ];then
     _RLWRAP_OPT="--remember"
@@ -232,13 +246,16 @@ if [ "$1" != "--no-rlwrap" ];then
     exec rlwrap $_RLWRAP_OPT $0 --no-rlwrap $@ && exit 0;
 fi
 
-optspec=":-:c:hvsi"
+optspec=":-:c:hvsin"
 while getopts "$optspec" optchar; do
     case "${optchar}" in
         -)
             case "${OPTARG}" in
                 help)
                     git::repl::help; exit 1
+                    ;;
+                no-help-message)
+                    git::repl::mode::no_help_message
                     ;;
                 init)
                     git::repl::do_git_init
@@ -265,6 +282,9 @@ while getopts "$optspec" optchar; do
         i)
             git::repl::do_git_init
             ;;
+        n)
+            git::repl::mode::no_help_message
+            ;;
         c)
             git::repl::config::completion "${OPTARG}"
             ;;
@@ -282,6 +302,11 @@ while getopts "$optspec" optchar; do
             ;;
     esac
 done
+
+#
+# check git repository
+#
+git rev-parse || git::repl::exit
 
 
 trap git::repl::exit HUP INT QUIT TERM

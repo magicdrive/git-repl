@@ -10,8 +10,11 @@ USAGE
 ----
 ```
  * git-repl                      # Launch git with REPL in current path.
- *  [-v|--verbose]               # REPL verbose mode.
  *  [-h|--help]                  # Show This help.
+ *  [-i|--init]                  # Initialize current dir as git-repository. then start REPL
+ *  [-v|--verbose]               # REPL start with repository infomation message.
+ *  [-s|--with-status]           # Exec git status command, when pre loop.
+ *  [-f|--completion]            # Specify Completion file.
 ```
 
 MIT License
