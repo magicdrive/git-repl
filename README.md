@@ -7,12 +7,12 @@ git-repl - git REPL tool for shell.
 DEPENDENCIES
 ----
 
-### require
-* [rlwrap](https://github.com/hanslub42/rlwrap)
+* requirement
+- `rlwrap` - [https://github.com/hanslub42/rlwrap](https://github.com/hanslub42/rlwrap)
 
-### optional
-* [exa](https://github.com/ogham/exa)
-* [bat](https://github.com/sharkdp/bat)
+* optional
+- `exa` - [https://github.com/ogham/exa](https://github.com/ogham/exa)
+- `bat` - [https://github.com/sharkdp/bat](https://github.com/sharkdp/bat)
 
 USAGE
 ----
