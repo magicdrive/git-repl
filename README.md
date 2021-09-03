@@ -13,6 +13,7 @@ DEPENDENCIES
 
 ### requirement
 
+* `bash v4 or later` - [http://git.savannah.gnu.org/cgit/bash.git](http://git.savannah.gnu.org/cgit/bash.git/)
 * `rlwrap` - [https://github.com/hanslub42/rlwrap](https://github.com/hanslub42/rlwrap)
 
 ### optional
