@@ -4,6 +4,10 @@ NAME
 ----
 git-repl - git REPL tool for shell.
 
+----
+<img src="https://github.com/magicdrive/git-repl/raw/main/docs/images/image.png" alt="git-repl" width="500" >
+
+
 DEPENDENCIES
 ----
 
