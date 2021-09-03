@@ -8,6 +8,7 @@
 #     *  [-h|--help]                  # Show This help.
 #     *  [-i|--init]                  # Initialize current dir as git-repository. then start REPL
 #     *  [-v|--verbose]               # REPL start with repository infomation message.
+#     *  [-n|--no-help-message]       # Config Start with no help message.
 #     *  [-s|--with-status]           # Exec git status command, when pre loop.
 #     *  [-f|--completion]            # Specify Completion file.
 #
@@ -36,13 +37,14 @@
 set -e
 
 __GIT_REPL_PROMPT_ORIG="\[\e[1;36m\]\$ git-repl [\$(__prompt::toplevel)] \[\e[1;35m\]\$(__prompt::branch)\[\e[m\] > \[\e[32m\]git\[\e[m\] "
+
 export GIT_REPL_DEFAULT_PROMPT="${GIT_REPL_DEFAULT_PROMPT:-${__GIT_REPL_PROMPT_ORIG}}"
 export GIT_REPL_DEFAULT_COMPLETION_FILE="${GIT_REPL_DEFAULT_COMPLETION_FILE:-""}"
 export GIT_REPL_LS_CMD="${GIT_REPL_LS_CMD:-""}"
 export GIT_REPL_CAT_CMD="${GIT_REPL_CAT_CMD:-""}"
-export __GIT_REPL_START_WITH_INFO=0
-export __GIT_REPL_WITH_STATUS=0
-export __GIT_REPL_START_WITH_HELP_MESSAGE=1
+export GIT_REPL_START_WITH_INFO=${GIT_REPL_START_WITH_INFO:-"0"}
+export GIT_REPL_WITH_STATUS=${GIT_REPL_WITH_STATUS:-"0"}
+export GIT_REPL_START_WITH_HELP_MESSAGE=${GIT_REPL_START_WITH_HELP_MESSAGE:-"1"}
 
 __prompt::dirty() {
     git rev-parse 2> /dev/null && [ "$(git status --short 2>/dev/null)" = "" ] || echo "*"
@@ -67,6 +69,7 @@ USAGE:
     *  [-h|--help]                  # Show This help.
     *  [-i|--init]                  # Initialize current dir as git-repository. then start REPL
     *  [-v|--verbose]               # Start REPL with repository infomation message.
+    *  [-n|--no-help-message]       # Config Start with no help message.
     *  [-s|--with-status]           # Exec git status command, when pre loop.
     *  [-f|--completion]            # Specify Completion file.
 HELP
@@ -179,10 +182,10 @@ git::repl::config::completion() {
 git::repl::main() {
     git::repl::setup
     git::repl::message::start
-    if [ "${__GIT_REPL_START_WITH_HELP_MESSAGE}" = "1" ];then
+    if [ "${GIT_REPL_START_WITH_HELP_MESSAGE}" = "1" ];then
         git::repl::message::bind_command
     fi
-    if [ "${__GIT_REPL_START_WITH_INFO}" = "1" ];then
+    if [ "${GIT_REPL_START_WITH_INFO}" = "1" ];then
         git::repl::info
     fi
 
@@ -219,7 +222,7 @@ git::repl::main() {
                 ;;
         esac
 
-        if [ "${__GIT_REPL_WITH_STATUS}" = "1" ];then
+        if [ "${GIT_REPL_WITH_STATUS}" = "1" ];then
             git status -sb
         fi
 
@@ -227,15 +230,15 @@ git::repl::main() {
 }
 
 git::repl::mode::no_help_message() {
-    __GIT_REPL_START_WITH_HELP_MESSAGE=0
+    GIT_REPL_START_WITH_HELP_MESSAGE=0
 }
 
 git::repl::mode::verbose() {
-    __GIT_REPL_START_WITH_INFO=1
+    GIT_REPL_START_WITH_INFO=1
 }
 
 git::repl::mode::with_status() {
-    __GIT_REPL_WITH_STATUS=1
+    GIT_REPL_WITH_STATUS=1
 }
 
 if [ "$1" != "--no-rlwrap" ];then
