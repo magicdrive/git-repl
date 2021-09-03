@@ -4,6 +4,15 @@ NAME
 ----
 git-repl - git REPL tool for shell.
 
+DEPENDENCIES
+----
+
+###require
+* [rlwrap](https://github.com/hanslub42/rlwrap)
+
+###optional
+* [exa](https://github.com/ogham/exa)
+* [bat](https://github.com/sharkdp/bat)
 
 USAGE
 ----

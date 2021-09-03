@@ -79,9 +79,9 @@ HELP
 git::repl::setup() {
 
     if [ "$(uname)" = 'Darwin' ];then
-        if [ -f "$HOME/local/bin/ls" ];then
+        if [ -f "$(which ls)" ];then
             lscmd="ls --color=auto"
-        elif [ -f /usr/local/bin/gls ];then
+        elif [ -f "$(which gls)" ];then
             lscmd="gls --color=auto"
         else
             lscmd="ls -G"
@@ -96,7 +96,7 @@ git::repl::setup() {
         catcmd="cat";
     fi
 
-    if [ -f "$HOME/local/bin/exa" ];then
+    if [ -f "$(which exa)" ];then
         lscmd="exa --color=auto"
     fi
 
