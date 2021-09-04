@@ -31,13 +31,14 @@ USAGE
  *  [-n|--no-help-message]       # Config Start with no help message.
  *  [-s|--with-status]           # Exec git status command, when pre loop.
  *  [-f|--completion]            # Specify Completion file.
+ *  [-o|--rlwrap-opt]            # Specify \`rlwrap\` command option.
 ```
 
 ENVIROMENTS
 ----
 ```
 GIT_REPL_DEFAULT_PROMPT          # git repl prompt
-GIT_REPL_DEFAULT_COMPLETION_FILE # completion file locate.
+GIT_REPL_DEFAULT_COMPLETION_DIR  # completion files directory locate.
 GIT_REPL_LS_CMD                  # ls alias in REPL
 GIT_REPL_CAT_CMD                 # cat alias in REPL
 GIT_REPL_START_WITH_INFO         # start with infomation message. on:1 off:0 (default 0)

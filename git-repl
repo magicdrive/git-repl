@@ -11,6 +11,7 @@
 #     *  [-n|--no-help-message]       # Config Start with no help message.
 #     *  [-s|--with-status]           # Exec git status command, when pre loop.
 #     *  [-f|--completion]            # Specify Completion file.
+#     *  [-o|--rlwrap-opt]            # Specify \`rlwrap\` command option.
 #
 # MIT License
 #
@@ -36,10 +37,14 @@
 
 set -e
 
+trap git::repl::exit HUP INT QUIT TERM
+
 __GIT_REPL_PROMPT_ORIG="\[\e[1;36m\]\$ git-repl [\$(__prompt::toplevel)] \[\e[1;35m\]\$(__prompt::branch)\[\e[m\] > \[\e[32m\]git\[\e[m\] "
 
 export GIT_REPL_DEFAULT_PROMPT="${GIT_REPL_DEFAULT_PROMPT:-${__GIT_REPL_PROMPT_ORIG}}"
-export GIT_REPL_DEFAULT_COMPLETION_FILE="${GIT_REPL_DEFAULT_COMPLETION_FILE:-""}"
+export GIT_REPL_DEFAULT_COMPLETION_DIR="${GIT_REPL_DEFAULT_COMPLETION_FILE:-"$(cd "$(dirname $0)/../" && pwd)/share/git-repl/completion"}"
+echo $GIT_REPL_DEFAULT_COMPLETION_DIR
+export GIT_REPL_DEFAULT_RLWRAP_OPT="${GIT_REPL_DEFAULT_RLWRAP_OPT:-"--remember"}"
 export GIT_REPL_LS_CMD="${GIT_REPL_LS_CMD:-""}"
 export GIT_REPL_CAT_CMD="${GIT_REPL_CAT_CMD:-""}"
 export GIT_REPL_START_WITH_INFO=${GIT_REPL_START_WITH_INFO:-"0"}
@@ -72,6 +77,7 @@ USAGE:
     *  [-n|--no-help-message]       # Config Start with no help message.
     *  [-s|--with-status]           # Exec git status command, when pre loop.
     *  [-f|--completion]            # Specify Completion file.
+    *  [-o|--rlwrap-opt]            # Specify \`rlwrap\` command option.
 HELP
     exit 1
 }
@@ -175,7 +181,7 @@ git::repl::do_git_init() {
 git::repl::config::completion() {
     local completion_file="$1"
     if [[ -e ${completion_file} ]];then
-        GIT_REPL_DEFAULT_COMPLETION_FILE="$1"
+        GIT_REPL_DEFAULT_COMPLETION_DIR="$1"
     fi
 }
 
@@ -233,6 +239,10 @@ git::repl::mode::no_help_message() {
     GIT_REPL_START_WITH_HELP_MESSAGE=0
 }
 
+git::repl::config::rlwrap_opt() {
+    GIT_REPL_DEFAULT_RLWRAP_OPT="$1"
+}
+
 git::repl::mode::verbose() {
     GIT_REPL_START_WITH_INFO=1
 }
@@ -241,15 +251,8 @@ git::repl::mode::with_status() {
     GIT_REPL_WITH_STATUS=1
 }
 
-if [ "$1" != "--no-rlwrap" ];then
-    _RLWRAP_OPT="--remember"
-    if [[ -f ${GIT_REPL_DEFAULT_COMPLETION_FILE} ]];then
-        OPT="$_RLWRAP_OPT --file "${GIT_REPL_DEFAULT_COMPLETION_FILE}""
-    fi
-    exec rlwrap $_RLWRAP_OPT $0 --no-rlwrap $@ && exit 0;
-fi
 
-optspec=":-:c:hvsin"
+optspec=":-:o:d:hvsin"
 while getopts "$optspec" optchar; do
     case "${optchar}" in
         -)
@@ -263,7 +266,7 @@ while getopts "$optspec" optchar; do
                 init)
                     git::repl::do_git_init
                     ;;
-                completion)
+                completion-dir)
                     val="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
                     git::repl::config::completion "${val}"
                     ;;
@@ -272,6 +275,10 @@ while getopts "$optspec" optchar; do
                     ;;
                 with-status)
                     git::repl::mode::with_status
+                    ;;
+                rlwrap-opt)
+                    val="${!OPTIND}"; OPTIND=$(( $OPTIND + 1 ))
+                    git::repl::config::rlwrap_opt "${val}"
                     ;;
                 *)
                     if [ "$OPTERR" = 1 ] && [ "${optspec:0:1}" != ":" ]; then
@@ -288,7 +295,7 @@ while getopts "$optspec" optchar; do
         n)
             git::repl::mode::no_help_message
             ;;
-        c)
+        d)
             git::repl::config::completion "${OPTARG}"
             ;;
         v)
@@ -296,6 +303,9 @@ while getopts "$optspec" optchar; do
             ;;
         s)
             git::repl::mode::with_status
+            ;;
+        o)
+            git::repl::config::rlwrap_opt "${OPTARG}"
             ;;
         *)
             if [ "$OPTERR" != 1 ] || [ "${optspec:0:1}" = ":" ]; then
@@ -311,7 +321,13 @@ done
 #
 git rev-parse || git::repl::exit
 
-
-trap git::repl::exit HUP INT QUIT TERM
+if [ "$1" != "--no-rlwrap" ];then
+    if [[ -d ${GIT_REPL_DEFAULT_COMPLETION_DIR} ]];then
+        for x in $(ls ${GIT_REPL_DEFAULT_COMPLETION_DIR}); do
+            GIT_REPL_DEFAULT_RLWRAP_OPT="${GIT_REPL_DEFAULT_RLWRAP_OPT} --file "${GIT_REPL_DEFAULT_COMPLETION_DIR}/${x}""
+        done
+    fi
+    exec rlwrap ${GIT_REPL_DEFAULT_RLWRAP_OPT} $0 --no-rlwrap $@ && exit 0;
+fi
 
 git::repl::main && exit 0;

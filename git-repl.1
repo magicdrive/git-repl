@@ -16,6 +16,7 @@ git\-repl \- git REPL tool for shell.
  *  [\-n|\-\-no\-help\-message]       # Config Start with no help message.
  *  [\-s|\-\-with\-status]           # Exec git status command, when pre loop.
  *  [\-f|\-\-completion]            # Specify Completion file.
+ *  [\-o|\-\-rlwrap-opt]            # Specify \`rlwrap\` command option.
 
 .fi
 .RE
@@ -26,7 +27,7 @@ git\-repl \- git REPL tool for shell.
 
 .nf
 GIT\_REPL\_DEFAULT\_PROMPT          # git repl prompt
-GIT\_REPL\_DEFAULT\_COMPLETION\_FILE # completion file locate.
+GIT\_REPL\_DEFAULT\_COMPLETION\_DIR  # completion files directory locate.
 GIT\_REPL\_LS\_CMD                  # ls alias in REPL
 GIT\_REPL\_CAT\_CMD                 # cat alias in REPL
 GIT\_REPL\_START\_WITH\_INFO         # start with infomation message. on:1 off:0 (default 0)
