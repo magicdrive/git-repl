@@ -31,10 +31,10 @@ USAGE
  *  [-n|--no-help-message]       # Config Start with no help message.
  *  [-s|--with-status]           # Exec git status command, when pre loop.
  *  [-f|--completion]            # Specify Completion file.
- *  [-o|--rlwrap-opt]            # Specify \`rlwrap\` command option.
+ *  [-o|--rlwrap-opt]            # Specify `rlwrap` command option.
 ```
 
-ENVIROMENTS
+ENVIRONMENTS
 ----
 ```
 GIT_REPL_DEFAULT_PROMPT          # git repl prompt
