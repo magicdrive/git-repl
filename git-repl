@@ -43,7 +43,6 @@ __GIT_REPL_PROMPT_ORIG="\[\e[1;36m\]\$ git-repl [\$(__prompt::toplevel)] \[\e[1;
 
 export GIT_REPL_DEFAULT_PROMPT="${GIT_REPL_DEFAULT_PROMPT:-${__GIT_REPL_PROMPT_ORIG}}"
 export GIT_REPL_DEFAULT_COMPLETION_DIR="${GIT_REPL_DEFAULT_COMPLETION_FILE:-"$(cd "$(dirname $0)/../" && pwd)/share/git-repl/completion"}"
-echo $GIT_REPL_DEFAULT_COMPLETION_DIR
 export GIT_REPL_DEFAULT_RLWRAP_OPT="${GIT_REPL_DEFAULT_RLWRAP_OPT:-"--remember"}"
 export GIT_REPL_LS_CMD="${GIT_REPL_LS_CMD:-""}"
 export GIT_REPL_CAT_CMD="${GIT_REPL_CAT_CMD:-""}"
