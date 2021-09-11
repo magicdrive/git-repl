@@ -135,7 +135,7 @@ git::repl::message::bind_command() {
     echo "alias ls=\`${lscmd}\`"
     echo "alias cat=\`${catcmd}\`"
     echo
-    echo -e "\033[1;37;42m* repl special command:\033[m"
+    echo -e "\033[1;37;42m* repl special commands:\033[m"
     echo "help!       -> Show this message."
     echo "info!       -> Show git infomation."
     echo "exit        -> Exit git-repl."
