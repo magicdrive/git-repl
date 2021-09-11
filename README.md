@@ -5,7 +5,8 @@ NAME
 git-repl - git REPL tool for shell.
 
 ----
-<img src="https://user-images.githubusercontent.com/1598505/132097670-39967a65-7e19-444b-ab73-13036abe99b8.png" alt="git-repl" width="500" >
+<img width="1033" alt="image" src="https://user-images.githubusercontent.com/1598505/132949620-ffa75d57-b74c-4b5f-a9ae-8c1809be4960.png">
+
 
 
 DEPENDENCIES
