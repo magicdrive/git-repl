@@ -59,11 +59,11 @@ __prompt::branch() {
 }
 
 __prompt::toplevel() {
-    basename $(git rev-parse --show-toplevel)
+    basename "$(git rev-parse --show-toplevel)"
 }
 
 git::repl::version() {
-    echo "v1.0.0"
+    echo "v1.0.1"
 }
 
 git::repl::help() {
@@ -84,9 +84,9 @@ HELP
 git::repl::setup() {
 
     if [ "$(uname)" = 'Darwin' ];then
-        if [ -f "$(which ls)" ];then
+        if [ -x "/usr/local/bin/ls)" ] || [ -x "~/local/bin/ls)" ];then
             lscmd="ls --color=auto"
-        elif [ -f "$(which gls)" ];then
+        elif [ -x "/usr/local/bin/gls" ];then
             lscmd="gls --color=auto"
         else
             lscmd="ls -G"
@@ -95,21 +95,21 @@ git::repl::setup() {
         lscmd="ls --color=auto"
     fi
 
-    if [ -f "$(which bat)" ];then
+    if [ -x "$(which bat)" ];then
         catcmd="bat";
     else
         catcmd="cat";
     fi
 
-    if [ -f "$(which exa)" ];then
+    if [ -x "$(which exa)" ];then
         lscmd="exa --color=auto"
     fi
 
-    if [ -x "$(which ${GIT_REPL_LS_CMD})" ];then
+    if [[ -n ${GIT_REPL_LS_CMD} ]] && [ -x "$(which ${GIT_REPL_LS_CMD})" ];then
         lscmd="${GIT_REPL_LS_CMD}"
     fi
 
-    if [ -x "$(which ${GIT_REPL_CAT_CMD})" ];then
+    if [[ -n ${GIT_REPL_CAT_CMD} ]] && [ -x "$(which ${GIT_REPL_CAT_CMD})" ];then
         catcmd="${GIT_REPL_CAT_CMD}"
     fi
 }
@@ -202,7 +202,7 @@ git::repl::main() {
             "ls")
                 ${lscmd}
                 ;;
-            "exit")
+            "bye"|"exit")
                 git::repl::exit
                 ;;
             *)
