@@ -63,7 +63,7 @@ __prompt::toplevel() {
 }
 
 git::repl::version() {
-    echo "v1.0.1"
+    echo "v1.0.2"
 }
 
 git::repl::help() {
